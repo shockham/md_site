@@ -23,12 +23,13 @@ main =
     runSpock 8080 $ spockT id $ do
         middleware $ staticPolicy (addBase "static")
 
-        get root $ do
-            content <- liftIO $ fromMdFile "md/index.md" 
-            html content
-        get var $ \name -> do
-            content <- liftIO $ fromMdFile ("md/" <> name <> ".md")
-            html content
+        get root $ mdResponse "md/index.md" 
+        get var $ \name -> mdResponse ("md/" <> name <> ".md")
+
+mdResponse :: FilePath -> ActionCtxT ctx IO a
+mdResponse f = do
+    content <- liftIO $ fromMdFile f 
+    html content
 
 fromMdFile :: FilePath -> IO T.Text
 fromMdFile f = liftM renderMd $ readFile f
